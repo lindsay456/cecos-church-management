@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+*.egg
+.venv/
+venv/
+.env
+
+# Django
+db.sqlite3
+*.log
+media/
+staticfiles/
+
+# Angular / Node
+node_modules/
+.angular/
+dist/
+*.js.map
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Dump files (optional, remove if you want to keep them)
+dump_cecos.sql
+fixture_cecos.json
+base_cecos.zip
+test_export.xlsx
+
+# Secrets
+*.pem
+*.key

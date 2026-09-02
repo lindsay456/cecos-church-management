@@ -1,0 +1,30 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = "--strict-markers -v --tb=short"
+markers = [
+    "slow: marks tests as slow",
+    "security: marks security tests",
+    "financial: marks financial tests",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.isort]
+known-first-party = ["apps"]
+
+[tool.coverage.run]
+source = ["apps"]
+omit = ["*/tests/*", "*/migrations/*", "*/admin.py", "*/apps.py"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 70
+
+[tool.black]
+line-length = 120
+target-version = ["py312"]
