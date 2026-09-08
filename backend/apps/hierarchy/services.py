@@ -69,9 +69,8 @@ def user_can_manage_user(user, target_user) -> bool:
 
 def is_administrative_role(role) -> bool:
     return role in {
-        UserRole.SUPER_ADMIN,
+        UserRole.LOCAL_LEADER,
         UserRole.DIVISION_ADMIN,
         UserRole.UNION_ADMIN,
         UserRole.FEDERATION_ADMIN,
-        UserRole.LOCAL_LEADER,
     }

@@ -10,10 +10,13 @@ from apps.common.enums import UserRole
 ADMIN_ROLES = [
     UserRole.LOCAL_LEADER,
     UserRole.TREASURER,
+    UserRole.DEPARTMENT_LEADER,
     UserRole.CHAPEL_LEADER,
+    UserRole.PASTORAL_LEADER,
 ]
 
 FINANCE_ROLES = [
+    UserRole.LOCAL_LEADER,
     UserRole.TREASURER,
 ]
 
@@ -52,7 +55,7 @@ class RoleBasedPermission(BasePermission):
 class IsSuperAdmin(BasePermission):
     def has_permission(self, request, view):
         user = request.user
-        return bool(user and user.is_authenticated and user.is_super_admin)
+        return bool(user and user.is_authenticated and user.role == UserRole.LOCAL_LEADER)
 
 
 class IsAuditorOrSuperAdmin(BasePermission):
@@ -60,7 +63,7 @@ class IsAuditorOrSuperAdmin(BasePermission):
         user = request.user
         if not user or not user.is_authenticated:
             return False
-        return user.is_super_admin or user.role == UserRole.AUDITOR
+        return user.role == UserRole.LOCAL_LEADER or user.role == UserRole.AUDITOR
 
 
 class ScopePermission(BasePermission):
@@ -76,7 +79,7 @@ class ScopePermission(BasePermission):
         user = request.user
         if not user or not user.is_authenticated:
             return False
-        if user.is_super_admin:
+        if user.role == UserRole.LOCAL_LEADER:
             return True
         from apps.hierarchy.services import user_can_access_entity
 

@@ -35,7 +35,11 @@ class DashboardStatsView(APIView):
         month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
         church = user.entity
-        if not church:
+        is_leader = user.role == UserRole.LOCAL_LEADER
+        is_auditor = user.role == UserRole.AUDITOR
+        sees_all = is_leader or is_auditor
+
+        if not church and not sees_all:
             return Response({
                 "active_members": 0, "families": 0, "chapels": 0, "last_worship_count": 0,
                 "visitors": 0, "upcoming_events": 0,
@@ -47,39 +51,47 @@ class DashboardStatsView(APIView):
 
         role = user.role
 
-        # --- Common: always return all stats ---
-        members_count = Membre.objects.filter(church=church, is_active=True).count()
-        families_count = Famille.objects.filter(church=church).count()
-        chapels_count = Chapelle.objects.filter(church=church, is_active=True).count()
+        # --- Q for filtering: LOCAL_LEADER sees everything in denomination ---
+        from django.db.models import Q
+        if sees_all and church:
+            q_church = Q(church__denomination=church.denomination)
+        elif church:
+            q_church = Q(church=church)
+        else:
+            q_church = Q()
 
-        last_session = SessionCulte.objects.filter(church=church).order_by('-date').first()
+        members_count = Membre.objects.filter(q_church, is_active=True).count()
+        families_count = Famille.objects.filter(q_church).count()
+        chapels_count = Chapelle.objects.filter(q_church, is_active=True).count()
+
+        last_session = SessionCulte.objects.filter(q_church).order_by('-date').first()
         last_worship = 0
         if last_session:
             last_worship = (last_session.men_count or 0) + (last_session.women_count or 0) + (last_session.children_count or 0) + (last_session.visitors_count or 0)
 
-        visitors_count = Visiteur.objects.filter(church=church).count()
-        upcoming_events = Evenement.objects.filter(church=church, start_datetime__gte=now).count()
+        visitors_count = Visiteur.objects.filter(q_church).count()
+        upcoming_events = Evenement.objects.filter(q_church, start_datetime__gte=now).count()
 
         month_recettes = Recette.objects.filter(
-            church=church, date__gte=month_start.date(), status=FinancialStatus.APPROVED
+            q_church, date__gte=month_start.date(), status=FinancialStatus.APPROVED
         ).aggregate(total=Sum('amount'))['total'] or 0
 
         month_depenses = Depense.objects.filter(
-            church=church, date__gte=month_start.date(), status=FinancialStatus.APPROVED
+            q_church, date__gte=month_start.date(), status=FinancialStatus.APPROVED
         ).aggregate(total=Sum('amount'))['total'] or 0
 
         month_tithes = Don.objects.filter(
-            church=church, donation_date__gte=month_start.date(),
+            q_church, donation_date__gte=month_start.date(),
             donation_type='TITHE', status=DonationStatus.VALIDATED
         ).aggregate(total=Sum('amount'))['total'] or 0
 
         month_offerings = Don.objects.filter(
-            church=church, donation_date__gte=month_start.date(),
+            q_church, donation_date__gte=month_start.date(),
             donation_type__in=['GENERAL_OFFERING', 'SPECIAL_OFFERING'],
             status=DonationStatus.VALIDATED
         ).aggregate(total=Sum('amount'))['total'] or 0
 
-        budget = Budget.objects.filter(church=church, fiscal_year=now.year).first()
+        budget = Budget.objects.filter(q_church, fiscal_year=now.year).first()
         budget_consumed = 0
         if budget:
             planned = budget.lines.aggregate(total=Sum('planned_amount'))['total'] or 0
@@ -87,10 +99,10 @@ class DashboardStatsView(APIView):
                 budget_consumed = round(float(month_depenses) / float(planned) * 100, 1)
 
         open_pastoral = SuiviPastoral.objects.filter(
-            church=church, status__in=[PastoralStatus.OPEN, PastoralStatus.IN_PROGRESS]
+            q_church, status__in=[PastoralStatus.OPEN, PastoralStatus.IN_PROGRESS]
         ).count()
 
-        departments_count = Departement.objects.filter(church=church, is_active=True).count()
+        departments_count = Departement.objects.filter(q_church, is_active=True).count()
 
         # --- Notifications ---
         from apps.notifications.models import Notification
@@ -99,10 +111,10 @@ class DashboardStatsView(APIView):
         # --- Chapel leader: attendance for their chapel ---
         chapel_attendance = []
         if role == UserRole.CHAPEL_LEADER:
-            user_chapels = Chapelle.objects.filter(church=church, leader=user)
+            user_chapels = Chapelle.objects.filter(church=church, leader=user) if church else Chapelle.objects.none()
             if user_chapels.exists():
                 sessions = SessionCulte.objects.filter(
-                    chapel__in=user_chapels, church=church
+                    chapel__in=user_chapels
                 ).order_by('-date')[:10]
                 chapel_attendance = [
                     {
@@ -125,7 +137,7 @@ class DashboardStatsView(APIView):
 
         revenue_history = (
             Recette.objects.filter(
-                church=church, date__gte=month_start_6.date(),
+                q_church, date__gte=month_start_6.date(),
                 status=FinancialStatus.APPROVED
             )
             .annotate(month=TruncMonth('date'))
@@ -136,7 +148,7 @@ class DashboardStatsView(APIView):
 
         expense_history = (
             Depense.objects.filter(
-                church=church, date__gte=month_start_6.date(),
+                q_church, date__gte=month_start_6.date(),
                 status=FinancialStatus.APPROVED
             )
             .annotate(month=TruncMonth('date'))
@@ -147,7 +159,7 @@ class DashboardStatsView(APIView):
 
         tithe_history = (
             Don.objects.filter(
-                church=church, donation_date__gte=month_start_6.date(),
+                q_church, donation_date__gte=month_start_6.date(),
                 donation_type='TITHE', status=DonationStatus.VALIDATED
             )
             .annotate(month=TruncMonth('donation_date'))
@@ -157,7 +169,7 @@ class DashboardStatsView(APIView):
         )
 
         attendance_history = (
-            SessionCulte.objects.filter(church=church, date__gte=month_start_6.date())
+            SessionCulte.objects.filter(q_church, date__gte=month_start_6.date())
             .annotate(month=TruncMonth('date'))
             .values('month')
             .annotate(

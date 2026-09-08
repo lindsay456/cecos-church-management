@@ -35,6 +35,17 @@ dump_cecos.sql
 fixture_cecos.json
 base_cecos.zip
 test_export.xlsx
+cecos_dump.sql
+
+# Temp scripts
+auth_login.ps1
+fix_admin.py
+fix_admin_output.txt
+create_users.py
+check_receipts.py
+
+# Old embedded repo
+ecclesia-gestion/
 
 # Secrets
 *.pem

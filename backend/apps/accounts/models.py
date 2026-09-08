@@ -87,11 +87,11 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
 
     @property
     def is_super_admin(self) -> bool:
-        return self.role == UserRole.SUPER_ADMIN
+        return self.role == UserRole.LOCAL_LEADER
 
     @property
     def is_finance_role(self) -> bool:
-        return self.role in {UserRole.TREASURER, UserRole.AUDITOR, UserRole.SUPER_ADMIN}
+        return self.role in {UserRole.TREASURER, UserRole.AUDITOR, UserRole.LOCAL_LEADER}
 
 
 class UserRoleAssignment(TimeStampedModel):
