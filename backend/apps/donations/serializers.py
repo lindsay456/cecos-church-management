@@ -28,6 +28,7 @@ class DonListSerializer(serializers.ModelSerializer):
             "donation_type", "donation_type_display", "amount", "donation_date",
             "payment_method", "status", "status_display",
             "recorded_by", "recorded_by_name", "notes", "created_at",
+            "member_email", "member_phone",
         ]
         read_only_fields = ["donation_number"]
         extra_kwargs = {"church": {"required": False, "allow_null": True}}

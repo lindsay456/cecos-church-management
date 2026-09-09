@@ -526,8 +526,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       const lat = c.gps_lat || c.latitude || c.lat;
       const lng = c.gps_lng || c.longitude || c.lng || c.lon;
       if (lat && lng) {
-        const marker = L.marker([parseFloat(lat), parseFloat(lng)]).addTo(this.map)
-          .bindPopup(`<strong>${c.name}</strong><br>${c.address || ''}`);
+        const icon = L.divIcon({
+          className: 'chapel-marker',
+          html: `<div style="background:#2563EB;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.3);border:2px solid #fff;"><svg viewBox="0 0 24 24" width="16" height="16" fill="#fff"><path d="M12 2L2 7v2h20V7L12 2zm0 2.18L18.18 7H5.82L12 4.18zM4 11v7c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-7H4z"/></svg></div>`,
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
+        });
+        const marker = L.marker([parseFloat(lat), parseFloat(lng)], { icon }).addTo(this.map)
+          .bindPopup(`<div style="min-width:150px"><strong style="font-size:14px">${c.name}</strong><br><span style="color:#6B7280;font-size:12px">${c.address || ''}</span></div>`);
         this.chapelMarkers.push(marker);
         if (!centerSet) { this.map.setView([parseFloat(lat), parseFloat(lng)], 10); centerSet = true; }
       }
@@ -552,6 +558,21 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       );
     }
     this.renderChapelMarkers(this.filteredChapels);
+    // Zoom to first result if search has a query
+    if (q && this.filteredChapels.length > 0 && this.map) {
+      const first = this.filteredChapels[0];
+      const lat = first.gps_lat || first.latitude || first.lat;
+      const lng = first.gps_lng || first.longitude || first.lng || first.lon;
+      if (lat && lng) {
+        this.map.setView([parseFloat(lat), parseFloat(lng)], 14);
+        // Open popup of the matching marker
+        const marker = this.chapelMarkers.find((m: any) => {
+          const popup = m.getPopup();
+          return popup && popup.getContent().includes(first.name);
+        });
+        if (marker) marker.openPopup();
+      }
+    }
   }
 
   loadStats() {

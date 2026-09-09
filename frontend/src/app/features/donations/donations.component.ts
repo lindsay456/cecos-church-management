@@ -209,10 +209,20 @@ import { ROLES } from '../../core/constants/roles';
           <div class="form-row" *ngIf="!isMember">
             <div class="form-group">
               <label>Membre *</label>
-              <select [(ngModel)]="form.member" name="member" required>
+              <select [(ngModel)]="form.member" name="member" required (ngModelChange)="onMemberChange()">
                 <option value="">Selectionner un membre</option>
                 <option *ngFor="let m of members" [ngValue]="m.id">{{ m.full_name }}</option>
               </select>
+            </div>
+          </div>
+          <div class="form-row" *ngIf="!isMember && selectedMemberInfo">
+            <div class="form-group">
+              <label>Email du membre (pour envoi recu)</label>
+              <input type="email" [(ngModel)]="form.member_email" name="member_email" placeholder="email@gmail.com">
+            </div>
+            <div class="form-group">
+              <label>Telephone du membre (pour WhatsApp)</label>
+              <input type="tel" [(ngModel)]="form.member_phone" name="member_phone" placeholder="+237 6XX XXX XXX">
             </div>
           </div>
           <div class="form-row">
@@ -386,6 +396,13 @@ import { ROLES } from '../../core/constants/roles';
       border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font-family); transition: all 0.15s;
       &:hover { background: var(--primary-hover); } &:disabled { opacity: 0.6; cursor: not-allowed; }
     }
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: var(--white); color: var(--gray-700);
+      border: 1px solid var(--gray-200); border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; font-weight: 600;
+      font-family: var(--font-family); transition: all 0.15s;
+      &:hover { background: var(--gray-50); border-color: var(--primary); color: var(--primary); }
+      svg { flex-shrink: 0; }
+    }
     .btn-secondary { padding: 10px 16px; background: var(--gray-100); color: var(--gray-700); border: none; border-radius: var(--radius-sm); cursor: pointer; font-family: var(--font-family); }
     .btn-danger { padding: 10px 16px; background: #dc2626; color: #fff; border: none; border-radius: var(--radius-sm); cursor: pointer; font-family: var(--font-family); font-weight: 600; &:disabled { opacity: 0.6; cursor: not-allowed; } }
 
@@ -457,6 +474,7 @@ export class DonationsComponent implements OnInit {
   myTotalValidated = 0;
   pendingCount = 0;
   donorCount = 0;
+  selectedMemberInfo: any = null;
 
   get isMember(): boolean {
     return this.auth.currentUser?.role === ROLES.MEMBER;
@@ -524,19 +542,34 @@ export class DonationsComponent implements OnInit {
       const matchType = !this.filterType || d.donation_type === this.filterType;
       const matchStatus = !this.filterStatus || d.status === this.filterStatus;
       return matchSearch && matchType && matchStatus;
-    });
+    }).sort((a, b) => new Date(a.donation_date).getTime() - new Date(b.donation_date).getTime());
   }
 
   typeLabel(t: string): string { return this.typeLabels[t] || t; }
   statusLabel(s: string): string { return this.statusLabels[s] || s; }
   methodLabel(m: string): string { return this.methodLabels[m] || m; }
 
+  onMemberChange() {
+    const member = this.members.find((m: any) => m.id === this.form.member);
+    if (member) {
+      this.selectedMemberInfo = member;
+      this.form.member_email = member.email || '';
+      this.form.member_phone = member.phone || '';
+    } else {
+      this.selectedMemberInfo = null;
+      this.form.member_email = '';
+      this.form.member_phone = '';
+    }
+  }
+
   openCreateModal() {
     this.editingDon = null;
     this.form = {
       member: '', donation_type: 'GENERAL_OFFERING', amount: null,
-      donation_date: new Date().toISOString().split('T')[0], payment_method: 'CASH', notes: ''
+      donation_date: new Date().toISOString().split('T')[0], payment_method: 'CASH', notes: '',
+      member_email: '', member_phone: ''
     };
+    this.selectedMemberInfo = null;
     this.showFormModal = true;
   }
 
@@ -560,7 +593,8 @@ export class DonationsComponent implements OnInit {
     this.editingDon = d;
     this.form = {
       member: d.member, donation_type: d.donation_type, amount: d.amount,
-      donation_date: d.donation_date, payment_method: d.payment_method, notes: ''
+      donation_date: d.donation_date, payment_method: d.payment_method, notes: '',
+      member_email: '', member_phone: ''
     };
     this.showFormModal = true;
   }

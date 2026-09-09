@@ -37,7 +37,37 @@ def validate_donation(don, user):
 
         # Générer le reçu
         from apps.donations.models import Recu
-        Recu.objects.create(donation=don, status="ISSUED")
+        receipt = Recu.objects.create(donation=don, status="ISSUED")
+
+        # Envoyer le reçu par email au membre
+        member_email = getattr(don, 'member_email', None) or (don.member.email if don.member else None)
+        if member_email:
+            from apps.notifications.services import notify
+            from apps.common.enums import NotificationType
+            from apps.donations.receipt_generator import generate_donation_receipt_pdf
+            pdf_buffer = generate_donation_receipt_pdf(receipt, don)
+
+            notify(
+                recipient_user=user,
+                channel="EMAIL",
+                notification_type=NotificationType.RECEIPT,
+                subject=f"Reçu de don {receipt.receipt_number} — {don.amount} FCFA",
+                message=(
+                    f"Bonjour,\n\n"
+                    f"Un don de {don.amount} FCFA ({don.get_donation_type_display()}) "
+                    f"a été validé et enregistré sous le numéro {don.donation_number}.\n\n"
+                    f"Numéro de reçu : {receipt.receipt_number}\n"
+                    f"Date : {don.donation_date}\n"
+                    f"Montant : {don.amount} FCFA\n\n"
+                    f"Vous trouverez le reçu en pièce jointe.\n\n"
+                    f"L'equipe Cecos Church Management"
+                ),
+                related_object=don,
+                send=True,
+            )
+            receipt.sent_by_email = True
+            receipt.sent_at = timezone.now()
+            receipt.save(update_fields=["sent_by_email", "sent_at", "updated_at"])
 
         # Journal d'audit
         audit_log(

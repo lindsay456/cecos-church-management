@@ -74,6 +74,8 @@ class Don(TimeStampedModel):
     )
     cancelled_at = models.DateTimeField(null=True, blank=True)
     notes = models.TextField(blank=True, verbose_name="Notes")
+    member_email = models.EmailField(blank=True, verbose_name="Email du membre (pour reçu)")
+    member_phone = models.CharField(max_length=30, blank=True, verbose_name="Téléphone du membre (pour WhatsApp)")
 
     class Meta:
         verbose_name = "Don"

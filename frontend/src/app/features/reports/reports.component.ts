@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-reports',
@@ -8,7 +9,10 @@ import { ApiService } from '../../core/services/api.service';
   imports: [CommonModule],
   template: `
     <div class="page-header">
-      <h2>Rapports</h2>
+      <div>
+        <h2>Rapports</h2>
+        <p class="page-subtitle">Generez et telechargez les rapports de votre eglise</p>
+      </div>
     </div>
     <div class="reports-grid">
       <div class="report-card" *ngFor="let r of reports">
@@ -17,22 +21,25 @@ import { ApiService } from '../../core/services/api.service';
         </div>
         <h4>{{ r.title }}</h4>
         <p>{{ r.desc }}</p>
-        <button class="btn-primary" (click)="downloadReport(r.type)" [disabled]="loading === r.type">
-          <span class="material-icons" style="font-size:16px" *ngIf="loading === r.type">refresh</span>
-          <span class="material-icons" style="font-size:16px" *ngIf="loading !== r.type">download</span>
+        <button class="btn-export" (click)="downloadReport(r.type)" [disabled]="loading === r.type">
+          <span class="material-icons btn-icon-spin" *ngIf="loading === r.type">refresh</span>
+          <svg *ngIf="loading !== r.type" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
           {{ loading === r.type ? 'Telechargement...' : 'Telecharger PDF' }}
         </button>
       </div>
     </div>
   `,
   styles: [`
-    .page-header { margin-bottom: 20px; h2 { margin: 0; font-size: 22px; } }
+    .page-header { margin-bottom: 24px;
+      h2 { margin: 0; font-size: 22px; color: var(--gray-900); }
+      .page-subtitle { font-size: 13px; color: var(--gray-400); margin: 4px 0 0; }
+    }
     .reports-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
     .report-card {
       background: var(--white); border: 1px solid var(--gray-100); border-radius: var(--radius-lg);
       padding: 28px; text-align: center; box-shadow: var(--shadow-sm); transition: all 0.2s;
       &:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-      h4 { margin: 16px 0 6px; font-size: 15px; }
+      h4 { margin: 16px 0 6px; font-size: 15px; color: var(--gray-900); }
       p { font-size: 13px; color: var(--gray-500); margin-bottom: 20px; line-height: 1.5; }
     }
     .report-icon {
@@ -40,15 +47,16 @@ import { ApiService } from '../../core/services/api.service';
       align-items: center; justify-content: center; margin: 0 auto;
       .material-icons { font-size: 28px; }
     }
-    .btn-primary {
-      display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px;
+    .btn-export {
+      display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px;
       background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm);
-      font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font-family); transition: all 0.15s;
-      &:hover { background: var(--primary-hover); }
-      &:disabled { opacity: 0.6; cursor: not-allowed; }
-      .material-icons { animation: none; }
-      &:disabled .material-icons { animation: spin 1s linear infinite; }
+      font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font-family);
+      transition: all 0.2s; box-shadow: 0 2px 8px rgba(37,99,235,0.2);
+      &:hover { background: var(--primary-hover); box-shadow: 0 4px 12px rgba(37,99,235,0.3); transform: translateY(-1px); }
+      &:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+      svg { flex-shrink: 0; }
     }
+    .btn-icon-spin { animation: spin 1s linear infinite; font-size: 16px; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     @media (max-width: 1024px) { .reports-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 768px) { .reports-grid { grid-template-columns: 1fr; } }
@@ -66,7 +74,7 @@ export class ReportsComponent {
     { type: 'audit', title: 'Rapport d\'Audit', desc: 'Journal complet des actions utilisateur', icon: 'shield', bg: '#FFF7ED', color: '#EA580C' },
   ];
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private toast: ToastService) {}
 
   downloadReport(type: string): void {
     if (this.loading) return;
@@ -84,8 +92,15 @@ export class ReportsComponent {
     }
 
     req$.subscribe({
-      next: (blob) => { this.saveBlob(blob, `rapport-${type}.pdf`); this.loading = null; },
-      error: () => { alert('Erreur lors du telechargement du rapport'); this.loading = null; }
+      next: (blob) => {
+        this.saveBlob(blob, `rapport-${type}.pdf`);
+        this.loading = null;
+        this.toast.success('Rapport telecharge avec succes');
+      },
+      error: () => {
+        this.toast.error('Erreur lors du telechargement du rapport');
+        this.loading = null;
+      }
     });
   }
 

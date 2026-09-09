@@ -559,8 +559,8 @@ import { ToastService } from '../../core/services/toast.service';
       &:disabled { opacity: 0.4; cursor: not-allowed; }
       &:hover:not(:disabled) { background: var(--gray-200); }
     }
-    .btn-outline { padding: 10px 16px; background: var(--white); color: var(--gray-700); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); cursor: pointer; font-size: 14px; font-family: var(--font-family); display: inline-flex; align-items: center; gap: 6px;
-      &:hover { background: var(--gray-50); border-color: var(--gray-300); }
+    .btn-outline { padding: 10px 16px; background: var(--white); color: var(--gray-700); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); cursor: pointer; font-size: 14px; font-family: var(--font-family); display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s;
+      &:hover { background: var(--gray-50); border-color: var(--primary); color: var(--primary); }
     }
     .btn-icon { background: none; border: none; cursor: pointer; padding: 6px; border-radius: 6px; color: var(--gray-500); display: inline-flex; align-items: center;
       &:hover { background: var(--gray-100); color: var(--gray-700); }

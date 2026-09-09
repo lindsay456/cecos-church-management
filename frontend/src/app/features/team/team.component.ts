@@ -15,20 +15,24 @@ import { AuthService } from '../../core/services/auth.service';
         <h2>Mon equipe</h2>
         <p class="page-subtitle">Gerez les membres de votre equipe et leurs acces</p>
       </div>
-      <button class="btn-primary" (click)="openForm()">+ Ajouter un membre</button>
+      <button class="btn-primary btn-invite" (click)="openInviteModal()">
+        <span class="material-icons" style="font-size:18px">person_add</span>
+        Inviter un membre
+      </button>
     </div>
 
     <div class="filters-bar">
       <div class="search-box">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="var(--gray-400)"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-        <input [(ngModel)]="search" (keyup.enter)="load()" placeholder="Rechercher un membre..." class="search-input">
+        <input [(ngModel)]="search" (input)="filterList()" placeholder="Rechercher un membre..." class="search-input">
       </div>
-      <select [(ngModel)]="filterRole" (change)="load()">
+      <select [(ngModel)]="filterRole" (change)="filterList()">
         <option value="">Tous les roles</option>
         <option value="TREASURER">Tresorier</option>
         <option value="DEPARTMENT_LEADER">Chef de departement</option>
         <option value="PASTORAL_LEADER">Responsable pastoral</option>
         <option value="CHAPEL_LEADER">Responsable de chapelle</option>
+        <option value="AUDITOR">Auditeur</option>
       </select>
     </div>
 
@@ -50,13 +54,23 @@ import { AuthService } from '../../core/services/auth.service';
             <span>{{ member.phone }}</span>
           </div>
           <div class="detail-row">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="var(--gray-400)"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10z"/></svg>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="var(--gray-400)"><path d="M12 2L2 7v2h20V7L12 2zm0 2.18L18.18 7H5.82L12 4.18zM4 11v7c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-7H4zm3 2h2v4H7v-4zm4 0h2v4h-2v-4zm4 0h2v4h-2v-4z"/></svg>
             <span>{{ member.entity_name || 'Eglise' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="member.is_active !== undefined">
+            <span class="status-dot" [class.active]="member.is_active" [class.inactive]="!member.is_active"></span>
+            <span>{{ member.is_active ? 'Actif' : 'Inactif' }}</span>
           </div>
         </div>
         <div class="team-actions">
-          <button class="btn-outline-sm" (click)="editMember(member)">Modifier</button>
-          <button class="btn-danger-sm" (click)="confirmDelete(member)">Retirer</button>
+          <button class="btn-outline-sm" (click)="editMember(member)">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/></svg>
+            Modifier
+          </button>
+          <button class="btn-danger-sm" (click)="confirmDelete(member)">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            Retirer
+          </button>
         </div>
       </div>
     </div>
@@ -64,53 +78,143 @@ import { AuthService } from '../../core/services/auth.service';
     <div class="empty-state" *ngIf="!loading && !filtered.length">
       <svg viewBox="0 0 24 24" width="48" height="48" fill="var(--gray-300)"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
       <h3>Aucun membre d'equipe</h3>
-      <p>Ajoutez des membres pour gerer votre eglise.</p>
+      <p>Invitez des membres pour gerer votre eglise.</p>
+      <button class="btn-primary" style="margin-top:12px" (click)="openInviteModal()">
+        <span class="material-icons" style="font-size:18px">person_add</span>
+        Inviter un membre
+      </button>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <div class="modal-overlay" *ngIf="showForm" (click)="showForm = false">
+    <!-- Invite Modal -->
+    <div class="modal-overlay" *ngIf="showInvite" (click)="closeInviteModal()">
       <div class="modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h3>{{ editing ? 'Modifier le membre' : formTitle }}</h3>
-          <button class="btn-close" (click)="showForm = false">&times;</button>
+          <h3>Inviter un membre d'equipe</h3>
+          <button class="btn-close" (click)="closeInviteModal()">
+            <span class="material-icons">close</span>
+          </button>
         </div>
-        <form (ngSubmit)="save()">
+        <form (ngSubmit)="sendInvite()">
           <div class="form-row">
             <div class="form-group">
               <label>Prenom *</label>
-              <input [(ngModel)]="form.first_name" name="first_name" required placeholder="Prenom">
+              <input [(ngModel)]="inviteForm.first_name" name="first_name" required placeholder="Prenom">
             </div>
             <div class="form-group">
               <label>Nom *</label>
-              <input [(ngModel)]="form.last_name" name="last_name" required placeholder="Nom">
+              <input [(ngModel)]="inviteForm.last_name" name="last_name" required placeholder="Nom">
             </div>
           </div>
           <div class="form-group">
-            <label>Email *</label>
-            <input type="email" [(ngModel)]="form.email" name="email" required placeholder="prenom.nom@gmail.com">
-          </div>
-          <div class="form-group" *ngIf="!editing">
-            <label>Mot de passe *</label>
-            <input type="password" [(ngModel)]="form.password" name="password" required placeholder="Mot de passe" minlength="8">
+            <label>Email * (pour recevoir les identifiants)</label>
+            <input type="email" [(ngModel)]="inviteForm.email" name="email" required placeholder="prenom.nom@gmail.com">
           </div>
           <div class="form-row">
             <div class="form-group">
               <label>Telephone</label>
-              <input [(ngModel)]="form.phone" name="phone" placeholder="+237 6XX XXX XXX">
+              <input [(ngModel)]="inviteForm.phone" name="phone" placeholder="+237 6XX XXX XXX">
             </div>
             <div class="form-group">
               <label>Role *</label>
-              <select [(ngModel)]="form.role" name="role" required>
+              <select [(ngModel)]="inviteForm.role" name="role" required>
                 <option value="TREASURER">Tresorier</option>
                 <option value="DEPARTMENT_LEADER">Chef de departement</option>
                 <option value="PASTORAL_LEADER">Responsable pastoral</option>
                 <option value="CHAPEL_LEADER">Responsable de chapelle</option>
+                <option value="AUDITOR">Auditeur</option>
+              </select>
+            </div>
+          </div>
+          <div class="invite-info">
+            <span class="material-icons">info</span>
+            <span>Un mot de passe sera genere automatiquement et envoye par email a l'adresse indiquee.</span>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="closeInviteModal()">Annuler</button>
+            <button type="submit" class="btn-primary" [disabled]="saving">
+              <span class="material-icons" style="font-size:16px" *ngIf="!saving">send</span>
+              {{ saving ? 'Envoi en cours...' : 'Envoyer l\'invitation' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Password Generated Modal -->
+    <div class="modal-overlay" *ngIf="showPasswordModal" (click)="showPasswordModal = false">
+      <div class="modal modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Membre cree avec succes</h3>
+          <button class="btn-close" (click)="showPasswordModal = false">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+        <div class="password-result">
+          <div class="password-avatar" [style.background]="getAvatarColor(inviteForm.role)">
+            {{ getInitialsFromName(inviteForm.first_name, inviteForm.last_name) }}
+          </div>
+          <p><strong>{{ inviteForm.first_name }} {{ inviteForm.last_name }}</strong></p>
+          <p class="password-email">{{ inviteForm.email }}</p>
+          <div class="password-box">
+            <label>Mot de passe genere</label>
+            <div class="password-value">
+              <code>{{ generatedPassword }}</code>
+              <button class="btn-copy" (click)="copyPassword()" [title]="'Copier'">
+                <span class="material-icons">{{ copied ? 'check' : 'content_copy' }}</span>
+              </button>
+            </div>
+          </div>
+          <p class="password-note">
+            <span class="material-icons">email</span>
+            Ce mot de passe a ete envoye par email a <strong>{{ inviteForm.email }}</strong>.
+            Le membre pourra le changer apres sa premiere connexion.
+          </p>
+        </div>
+        <div class="form-actions">
+          <button class="btn-primary" (click)="showPasswordModal = false">Fermer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" *ngIf="showEdit" (click)="showEdit = false">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Modifier le membre</h3>
+          <button class="btn-close" (click)="showEdit = false">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+        <form (ngSubmit)="saveEdit()">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Prenom *</label>
+              <input [(ngModel)]="editForm.first_name" name="first_name" required placeholder="Prenom">
+            </div>
+            <div class="form-group">
+              <label>Nom *</label>
+              <input [(ngModel)]="editForm.last_name" name="last_name" required placeholder="Nom">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Telephone</label>
+              <input [(ngModel)]="editForm.phone" name="phone" placeholder="+237 6XX XXX XXX">
+            </div>
+            <div class="form-group">
+              <label>Role *</label>
+              <select [(ngModel)]="editForm.role" name="role" required>
+                <option value="TREASURER">Tresorier</option>
+                <option value="DEPARTMENT_LEADER">Chef de departement</option>
+                <option value="PASTORAL_LEADER">Responsable pastoral</option>
+                <option value="CHAPEL_LEADER">Responsable de chapelle</option>
+                <option value="AUDITOR">Auditeur</option>
               </select>
             </div>
           </div>
           <div class="form-actions">
-            <button type="button" class="btn-secondary" (click)="showForm = false">Annuler</button>
-            <button type="submit" class="btn-primary" [disabled]="saving">{{ editing ? 'Enregistrer' : 'Creer' }}</button>
+            <button type="button" class="btn-secondary" (click)="showEdit = false">Annuler</button>
+            <button type="submit" class="btn-primary" [disabled]="saving">{{ saving ? 'Enregistrement...' : 'Enregistrer' }}</button>
           </div>
         </form>
       </div>
@@ -121,7 +225,9 @@ import { AuthService } from '../../core/services/auth.service';
       <div class="modal modal-sm" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h3>Retirer de l'equipe</h3>
-          <button class="btn-close" (click)="deleting = null">&times;</button>
+          <button class="btn-close" (click)="deleting = null">
+            <span class="material-icons">close</span>
+          </button>
         </div>
         <p>Voulez-vous retirer <strong>{{ deleting?.first_name }} {{ deleting?.last_name }}</strong> de l'equipe ?</p>
         <div class="form-actions">
@@ -144,7 +250,9 @@ import { AuthService } from '../../core/services/auth.service';
     select { padding: 10px 14px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); font-size: 14px; background: var(--white); font-family: var(--font-family); }
 
     .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-    .team-card { background: var(--white); border-radius: var(--radius); padding: 20px; border: 1px solid var(--gray-100); box-shadow: var(--shadow-sm); }
+    .team-card { background: var(--white); border-radius: var(--radius); padding: 20px; border: 1px solid var(--gray-100); box-shadow: var(--shadow-sm); transition: all 0.2s;
+      &:hover { box-shadow: var(--shadow-md); }
+    }
     .team-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
     .avatar { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; flex-shrink: 0; }
     .team-info { flex: 1; min-width: 0;
@@ -153,6 +261,9 @@ import { AuthService } from '../../core/services/auth.service';
     }
     .team-details { margin-bottom: 16px; }
     .detail-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; color: var(--gray-500); }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .status-dot.active { background: #16a34a; }
+    .status-dot.inactive { background: #dc2626; }
     .team-actions { display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid var(--gray-100); }
 
     .badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; white-space: nowrap; }
@@ -162,29 +273,31 @@ import { AuthService } from '../../core/services/auth.service';
     .badge-chapel { background: #FFF7ED; color: #EA580C; }
     .badge-leader { background: #DCFCE7; color: #166534; }
     .badge-admin { background: #FEE2E2; color: #991B1B; }
+    .badge-auditor { background: #F3F4F6; color: #374151; }
 
-    .btn-primary { padding: 10px 20px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; font-size: 14px; font-family: var(--font-family);
+    .btn-primary { padding: 10px 20px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; font-size: 14px; font-family: var(--font-family); display: inline-flex; align-items: center; gap: 6px;
       &:hover { background: var(--primary-hover); }
-      &:disabled { opacity: 0.6; }
+      &:disabled { opacity: 0.6; cursor: not-allowed; }
+    }
+    .btn-invite { font-size: 14px; padding: 10px 20px; border-radius: var(--radius-sm); box-shadow: 0 2px 8px rgba(37,99,235,0.2);
+      &:hover { box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
     }
     .btn-secondary { padding: 10px 16px; background: var(--gray-100); color: var(--gray-700); border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 14px; font-family: var(--font-family); }
-    .btn-outline-sm { padding: 6px 14px; background: var(--white); color: var(--gray-700); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; font-family: var(--font-family);
+    .btn-outline-sm { padding: 6px 14px; background: var(--white); color: var(--gray-700); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; font-family: var(--font-family); display: inline-flex; align-items: center; gap: 4px;
       &:hover { background: var(--gray-50); }
     }
-    .btn-danger-sm { padding: 6px 14px; background: var(--white); color: var(--red); border: 1px solid #FECACA; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; font-family: var(--font-family);
+    .btn-danger-sm { padding: 6px 14px; background: var(--white); color: var(--red); border: 1px solid #FECACA; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; font-family: var(--font-family); display: inline-flex; align-items: center; gap: 4px;
       &:hover { background: #FEF2F2; }
     }
     .btn-danger { padding: 10px 20px; background: var(--red); color: #fff; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; font-size: 14px; font-family: var(--font-family);
       &:hover { background: #DC2626; }
     }
-    .btn-close { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--gray-400); }
+    .btn-close { background: none; border: none; cursor: pointer; padding: 4px; .material-icons { font-size: 20px; color: var(--gray-400); } }
 
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(2px); }
-    .modal { background: var(--white); border-radius: var(--radius); padding: 28px; width: 100%; max-width: 520px; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
-    .modal-sm { max-width: 400px; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;
-      h3 { margin: 0; font-size: 20px; color: var(--gray-900); }
-    }
+    .modal { background: var(--white); border-radius: var(--radius-lg); padding: 28px; width: 100%; max-width: 520px; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-xl); }
+    .modal-sm { max-width: 420px; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; h3 { margin: 0; font-size: 20px; color: var(--gray-900); } }
     .form-group { margin-bottom: 14px; label { display: block; font-size: 13px; font-weight: 600; color: var(--gray-600); margin-bottom: 5px; }
       input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); font-size: 14px; box-sizing: border-box; font-family: var(--font-family);
         &:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
@@ -192,6 +305,27 @@ import { AuthService } from '../../core/services/auth.service';
     }
     .form-row { display: flex; gap: 12px; }
     .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--gray-100); }
+
+    .invite-info { display: flex; align-items: flex-start; gap: 8px; padding: 12px 14px; background: #EFF6FF; border-radius: var(--radius-sm); font-size: 13px; color: #1E40AF; margin-bottom: 16px;
+      .material-icons { font-size: 18px; margin-top: 1px; flex-shrink: 0; }
+    }
+
+    .password-result { text-align: center; padding: 8px 0; }
+    .password-avatar { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 20px; margin: 0 auto 12px; }
+    .password-email { font-size: 13px; color: var(--gray-400); margin: 2px 0 16px; }
+    .password-box { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px;
+      label { display: block; font-size: 12px; font-weight: 600; color: var(--gray-500); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    }
+    .password-value { display: flex; align-items: center; justify-content: center; gap: 8px;
+      code { font-size: 18px; font-weight: 700; color: var(--primary); letter-spacing: 1px; background: var(--white); padding: 6px 14px; border-radius: 6px; border: 1px solid var(--gray-200); }
+    }
+    .btn-copy { background: none; border: none; cursor: pointer; padding: 6px; border-radius: 6px; color: var(--gray-500);
+      &:hover { background: var(--gray-100); color: var(--primary); }
+      .material-icons { font-size: 18px; }
+    }
+    .password-note { font-size: 13px; color: var(--gray-500); display: flex; align-items: flex-start; gap: 6px; text-align: left; background: #ECFDF5; padding: 12px; border-radius: var(--radius-sm);
+      .material-icons { font-size: 16px; color: #16a34a; margin-top: 1px; flex-shrink: 0; }
+    }
 
     .empty-state { text-align: center; padding: 60px 20px; background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-sm);
       h3 { margin: 12px 0 4px; font-size: 16px; } p { color: var(--gray-500); font-size: 14px; }
@@ -211,20 +345,24 @@ export class TeamComponent implements OnInit {
   search = '';
   filterRole = '';
   loading = false;
-  showForm = false;
   saving = false;
-  editing: any = null;
+
+  showInvite = false;
+  inviteForm: any = { first_name: '', last_name: '', email: '', phone: '', role: 'TREASURER' };
+
+  showPasswordModal = false;
+  generatedPassword = '';
+  copied = false;
+
+  showEdit = false;
+  editingMember: any = null;
+  editForm: any = {};
+
   deleting: any = null;
-  form: any = this.getEmptyForm();
-  formTitle = 'Ajouter un membre d\'équipe';
 
   constructor(private api: ApiService, private auth: AuthService, private toast: ToastService) {}
 
   ngOnInit() { this.load(); }
-
-  getEmptyForm() {
-    return { first_name: '', last_name: '', email: '', password: '', phone: '', role: 'TREASURER' };
-  }
 
   load() {
     this.loading = true;
@@ -246,22 +384,49 @@ export class TeamComponent implements OnInit {
     );
   }
 
-  openForm(member?: any) {
-    this.editing = member || null;
-    this.form = member ? { ...member, password: '' } : this.getEmptyForm();
-    this.showForm = true;
+  openInviteModal() {
+    this.inviteForm = { first_name: '', last_name: '', email: '', phone: '', role: 'TREASURER' };
+    this.showInvite = true;
   }
 
-  editMember(m: any) { this.openForm(m); }
+  closeInviteModal() { this.showInvite = false; }
 
-  save() {
+  sendInvite() {
     this.saving = true;
-    const obs = this.editing
-      ? this.api.updateTeamMember(this.editing.id, this.form)
-      : this.api.createTeamMember(this.form);
-    obs.subscribe({
-      next: () => { this.showForm = false; this.editing = null; this.saving = false; this.load(); this.toast.success('Membre d\'equipe sauvegarde avec succes'); },
-      error: (err) => { this.saving = false; this.toast.error(err.error?.detail || 'Erreur lors de la sauvegarde'); }
+    this.api.createTeamMember(this.inviteForm).subscribe({
+      next: (res: any) => {
+        this.saving = false;
+        this.generatedPassword = res.generated_password || 'Voir email';
+        this.showInvite = false;
+        this.showPasswordModal = true;
+        this.load();
+        this.toast.success('Membre ajoute a l\'equipe');
+      },
+      error: (err) => {
+        this.saving = false;
+        this.toast.error(err.error?.detail || 'Erreur lors de l\'invitation');
+      }
+    });
+  }
+
+  copyPassword() {
+    navigator.clipboard.writeText(this.generatedPassword);
+    this.copied = true;
+    setTimeout(() => { this.copied = false; }, 2000);
+    this.toast.success('Mot de passe copie');
+  }
+
+  editMember(m: any) {
+    this.editingMember = m;
+    this.editForm = { first_name: m.first_name, last_name: m.last_name, phone: m.phone || '', role: m.role };
+    this.showEdit = true;
+  }
+
+  saveEdit() {
+    this.saving = true;
+    this.api.updateTeamMember(this.editingMember.id, this.editForm).subscribe({
+      next: () => { this.showEdit = false; this.saving = false; this.load(); this.toast.success('Membre modifie'); },
+      error: (err) => { this.saving = false; this.toast.error(err.error?.detail || 'Erreur'); }
     });
   }
 
@@ -279,6 +444,10 @@ export class TeamComponent implements OnInit {
     return ((m.first_name?.[0] || '') + (m.last_name?.[0] || '')).toUpperCase();
   }
 
+  getInitialsFromName(first: string, last: string): string {
+    return ((first?.[0] || '') + (last?.[0] || '')).toUpperCase();
+  }
+
   getRoleLabel(role: string): string {
     const labels: Record<string, string> = {
       TREASURER: 'Tresorier', CHURCH_LEADER: 'Chef departement',
@@ -294,6 +463,7 @@ export class TeamComponent implements OnInit {
     if (role === 'PASTORAL_LEADER') return 'badge-pastoral';
     if (role === 'CHAPEL_LEADER') return 'badge-chapel';
     if (role === 'LOCAL_LEADER') return 'badge-admin';
+    if (role === 'AUDITOR') return 'badge-auditor';
     return 'badge-department';
   }
 
@@ -302,6 +472,7 @@ export class TeamComponent implements OnInit {
     if (role.includes('DEPARTMENT') || role === 'CHURCH_LEADER') return '#2563EB';
     if (role === 'PASTORAL_LEADER') return '#7C3AED';
     if (role === 'CHAPEL_LEADER') return '#EA580C';
+    if (role === 'AUDITOR') return '#6B7280';
     return '#059669';
   }
 }

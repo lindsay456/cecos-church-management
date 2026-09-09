@@ -295,6 +295,19 @@ class TeamViewSet(viewsets.ModelViewSet):
             return UserUpdateSerializer
         return UserListSerializer
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(
+            {
+                "detail": "Membre cree avec succes.",
+                "generated_password": getattr(self, "_generated_password", None),
+                "user": UserListSerializer(serializer.instance, context={"request": request}).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
     def get_queryset(self):
         user = self.request.user
         if user.is_super_admin:
@@ -304,6 +317,9 @@ class TeamViewSet(viewsets.ModelViewSet):
         return User.objects.select_related("entity").filter(entity=user.entity)
 
     def perform_create(self, serializer):
+        import secrets
+        import string
+
         user = self.request.user
         role = self.request.data.get("role", UserRole.MEMBER)
         if role not in LOCAL_LEADER_MANAGEABLE_ROLES and not user.is_super_admin:
@@ -311,11 +327,40 @@ class TeamViewSet(viewsets.ModelViewSet):
                 "Vous ne pouvez creer que des utilisateurs avec les roles: "
                 + ", ".join(LOCAL_LEADER_MANAGEABLE_ROLES)
             )
+
+        # Auto-generate password
+        alphabet = string.ascii_letters + string.digits + "!@#$%&*"
+        generated_password = ''.join(secrets.choice(alphabet) for _ in range(12))
+
         save_kwargs = {}
         if not user.is_super_admin:
             save_kwargs["entity"] = user.entity
             save_kwargs["is_staff"] = True
         new_user = serializer.save(**save_kwargs)
+        new_user.set_password(generated_password)
+        new_user.save(update_fields=["password"])
+
+        # Send email with credentials
+        from apps.notifications.services import notify
+        from apps.common.enums import NotificationType
+        notify(
+            recipient_user=new_user,
+            channel="EMAIL",
+            notification_type=NotificationType.WELCOME,
+            subject="Bienvenue dans Cecos Church Management",
+            message=(
+                f"Bonjour {new_user.first_name} {new_user.last_name},\n\n"
+                f"Vous avez ete invite(e) a rejoindre l'equipe en tant que {new_user.get_role_display()}.\n\n"
+                f"Vos identifiants de connexion:\n"
+                f"Email: {new_user.email}\n"
+                f"Mot de passe: {generated_password}\n\n"
+                f"Connectez-vous et changez votre mot de passe apres la premiere connexion.\n\n"
+                f"L'equipe Cecos Church Management"
+            ),
+            related_object=new_user,
+            send=True,
+        )
+
         audit_log(
             action=AuditAction.CREATE,
             app_label="accounts",
@@ -326,6 +371,9 @@ class TeamViewSet(viewsets.ModelViewSet):
             user=self.request.user,
             request=self.request,
         )
+
+        # Store generated password in response
+        self._generated_password = generated_password
 
     def perform_update(self, serializer):
         target = serializer.instance
