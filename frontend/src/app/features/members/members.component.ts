@@ -842,18 +842,8 @@ export class MembersComponent implements OnInit {
   }
 
   downloadMemberReceipt(donationId: number) {
-    this.api.getDonationReceipt(donationId).subscribe({
-      next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `recu-${donationId}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 100);
-      },
-      error: () => { this.toast.error('Impossible de telecharger le recu'); }
-    });
+    const base = (this.api as any).base || '/api/v1';
+    this.api.openPdfInTab(`${base}/donations/${donationId}/receipt/`, `recu-${donationId}.pdf`);
   }
 
   loadMemberDepartments(memberId: number) {
@@ -884,19 +874,8 @@ export class MembersComponent implements OnInit {
   }
 
   downloadReceipt(receipt: any) {
-    this.api.downloadReceipt(receipt.id).subscribe({
-      next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `recu_${receipt.receipt_number}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 100);
-        this.toast.success('Recu telecharge avec succes');
-      },
-      error: () => { this.toast.error('Erreur lors du telechargement du recu'); }
-    });
+    const base = (this.api as any).base || '/api/v1';
+    this.api.openPdfInTab(`${base}/receipts/${receipt.id}/download/`, `recu_${receipt.receipt_number}.pdf`);
   }
 
   openTransferModal(member: any) {

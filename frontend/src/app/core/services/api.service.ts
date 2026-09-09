@@ -14,6 +14,21 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
+  private getToken(): string {
+    return localStorage.getItem('access_token') || '';
+  }
+
+  openPdfInTab(url: string, filename: string): void {
+    fetch(url, {
+      headers: { 'Authorization': `Bearer ${this.getToken()}` }
+    }).then(res => res.blob()).then(blob => {
+      const blobUrl = window.URL.createObjectURL(blob);
+      window.open(blobUrl, '_blank');
+    }).catch(() => {
+      alert('Erreur lors de l\'ouverture du fichier');
+    });
+  }
+
   // Churches
   getChurches(params?: any): Observable<any> { return this.http.get(`${this.base}/churches/`, { params }); }
   getChurch(id: number): Observable<Church> { return this.http.get<Church>(`${this.base}/churches/${id}/`); }

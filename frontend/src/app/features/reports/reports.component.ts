@@ -11,7 +11,7 @@ import { ToastService } from '../../core/services/toast.service';
     <div class="page-header">
       <div>
         <h2>Rapports</h2>
-        <p class="page-subtitle">Generez et telechargez les rapports de votre eglise</p>
+        <p class="page-subtitle">Generez et consultez les rapports de votre eglise</p>
       </div>
     </div>
     <div class="reports-grid">
@@ -21,10 +21,10 @@ import { ToastService } from '../../core/services/toast.service';
         </div>
         <h4>{{ r.title }}</h4>
         <p>{{ r.desc }}</p>
-        <button class="btn-export" (click)="downloadReport(r.type)" [disabled]="loading === r.type">
+        <button class="btn-export" (click)="openReport(r.type)" [disabled]="loading === r.type">
           <span class="material-icons btn-icon-spin" *ngIf="loading === r.type">refresh</span>
-          <svg *ngIf="loading !== r.type" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-          {{ loading === r.type ? 'Telechargement...' : 'Telecharger PDF' }}
+          <svg *ngIf="loading !== r.type" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
+          {{ loading === r.type ? 'Ouverture...' : 'Consulter le rapport' }}
         </button>
       </div>
     </div>
@@ -74,46 +74,29 @@ export class ReportsComponent {
     { type: 'audit', title: 'Rapport d\'Audit', desc: 'Journal complet des actions utilisateur', icon: 'shield', bg: '#FFF7ED', color: '#EA580C' },
   ];
 
-  constructor(private api: ApiService, private toast: ToastService) {}
+  private reportUrls: Record<string, string> = {};
 
-  downloadReport(type: string): void {
-    if (this.loading) return;
-    this.loading = type;
-
-    let req$;
-    switch (type) {
-      case 'members': req$ = this.api.getMembersReport(); break;
-      case 'financial': req$ = this.api.getFinancialReport(); break;
-      case 'donations': req$ = this.api.getDonationsReport(); break;
-      case 'attendance': req$ = this.api.getAttendanceReport(); break;
-      case 'pastoral': req$ = this.api.getPastoralReport(); break;
-      case 'audit': req$ = this.api.getAuditReport(); break;
-      default: this.loading = null; return;
-    }
-
-    req$.subscribe({
-      next: (blob) => {
-        this.saveBlob(blob, `rapport-${type}.pdf`);
-        this.loading = null;
-        this.toast.success('Rapport telecharge avec succes');
-      },
-      error: () => {
-        this.toast.error('Erreur lors du telechargement du rapport');
-        this.loading = null;
-      }
-    });
+  constructor(private api: ApiService, private toast: ToastService) {
+    const base = (this.api as any).base || '/api/v1';
+    this.reportUrls = {
+      members: `${base}/reports/members/`,
+      financial: `${base}/reports/financial/`,
+      donations: `${base}/reports/donations/`,
+      attendance: `${base}/reports/attendance/`,
+      pastoral: `${base}/reports/pastoral/`,
+      audit: `${base}/reports/audit/`,
+    };
   }
 
-  private saveBlob(blob: Blob, filename: string): void {
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
+  openReport(type: string): void {
+    if (this.loading) return;
+    this.loading = type;
+    const url = this.reportUrls[type];
+    if (!url) { this.loading = null; return; }
+    this.api.openPdfInTab(url, `rapport-${type}.pdf`);
     setTimeout(() => {
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    }, 100);
+      this.loading = null;
+      this.toast.success('Rapport ouvert dans un nouvel onglet');
+    }, 1000);
   }
 }

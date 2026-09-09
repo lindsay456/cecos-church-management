@@ -673,17 +673,7 @@ export class DonationsComponent implements OnInit {
   }
 
   downloadReceipt(id: number) {
-    this.api.getDonationReceipt(id).subscribe({
-      next: (blob) => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `recu-${id}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
-      },
-      error: () => alert('Impossible de telecharger le recu')
-    });
+    const base = (this.api as any).base || '/api/v1';
+    this.api.openPdfInTab(`${base}/donations/${id}/receipt/`, `recu-${id}.pdf`);
   }
 }
