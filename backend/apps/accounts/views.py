@@ -299,6 +299,7 @@ class TeamViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
+        serializer.instance.refresh_from_db()
         return Response(
             {
                 "detail": "Membre cree avec succes.",
@@ -333,12 +334,12 @@ class TeamViewSet(viewsets.ModelViewSet):
         generated_password = ''.join(secrets.choice(alphabet) for _ in range(12))
 
         save_kwargs = {}
-        if not user.is_super_admin:
+        if user.entity:
             save_kwargs["entity"] = user.entity
-            save_kwargs["is_staff"] = True
+        save_kwargs["is_staff"] = True
         new_user = serializer.save(**save_kwargs)
         new_user.set_password(generated_password)
-        new_user.save(update_fields=["password"])
+        new_user.save()
 
         # Send email with credentials
         from apps.notifications.services import notify
