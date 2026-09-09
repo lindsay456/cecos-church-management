@@ -195,7 +195,7 @@ import { ToastComponent } from '../toast/toast.component';
         </main>
 
         <footer class="app-footer">
-          <span>&copy; 2024 Cecos Church Management &bull; {{ lang.t('welcome_subtitle') }}</span>
+          <span>&copy; 2026 Cecos Church Management &bull; {{ lang.t('welcome_subtitle') }}</span>
           <div class="footer-links">
             <a href="#">{{ lang.t('search') }}</a>
             <a href="#">{{ lang.t('help') }}</a>

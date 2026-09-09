@@ -160,7 +160,7 @@ import { ToastService } from '../../core/services/toast.service';
               </div>
               <div class="form-group">
                 <label>Email</label>
-                <input type="email" [(ngModel)]="form.email" name="email" placeholder="prenom.nom@google.com">
+                <input type="email" [(ngModel)]="form.email" name="email" placeholder="prenom.nom@gmail.com">
               </div>
             </div>
             <div class="form-row">

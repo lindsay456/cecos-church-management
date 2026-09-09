@@ -87,7 +87,7 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
           <div class="form-group">
             <label>Email *</label>
-            <input type="email" [(ngModel)]="form.email" name="email" required placeholder="prenom.nom@google.com">
+            <input type="email" [(ngModel)]="form.email" name="email" required placeholder="prenom.nom@gmail.com">
           </div>
           <div class="form-group" *ngIf="!editing">
             <label>Mot de passe *</label>

@@ -87,7 +87,7 @@ import { ApiService } from '../../core/services/api.service';
           <div class="form-row">
             <div class="form-group">
               <label>Email principale</label>
-              <input type="email" [(ngModel)]="form.main_email" name="main_email" placeholder="prenom.nom@google.com">
+              <input type="email" [(ngModel)]="form.main_email" name="main_email" placeholder="prenom.nom@gmail.com">
             </div>
             <div class="form-group">
               <label>Telephone</label>

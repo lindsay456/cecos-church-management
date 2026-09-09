@@ -47,7 +47,7 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
 
         <div class="left-footer">
-          <span>&copy; 2024 Cecos Church Management</span>
+          <span>&copy; 2026 Cecos Church Management</span>
           <span class="sep">&bull;</span>
           <a href="#">Confidentialite</a>
           <span class="sep">&bull;</span>
@@ -67,7 +67,7 @@ import { AuthService } from '../../core/services/auth.service';
               <label>Adresse e-mail</label>
               <div class="input-with-icon">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="var(--gray-400)"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-                <input type="email" [(ngModel)]="email" name="email" placeholder="prenom.nom@google.com" autocomplete="email" required>
+                <input type="email" [(ngModel)]="email" name="email" placeholder="prenom.nom@gmail.com" autocomplete="email" required>
               </div>
             </div>
 

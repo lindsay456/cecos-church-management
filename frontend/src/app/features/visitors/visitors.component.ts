@@ -104,7 +104,7 @@ import { ToastService } from '../../core/services/toast.service';
           </div>
           <div class="form-row">
             <div class="form-group"><label>Telephone</label><input [(ngModel)]="form.phone" name="phone" placeholder="+237 6XX XXX XXX"></div>
-            <div class="form-group"><label>Email</label><input type="email" [(ngModel)]="form.email" name="email" placeholder="prenom.nom@google.com"></div>
+            <div class="form-group"><label>Email</label><input type="email" [(ngModel)]="form.email" name="email" placeholder="prenom.nom@gmail.com"></div>
           </div>
           <div class="form-row">
             <div class="form-group"><label>Date de visite *</label><input type="date" [(ngModel)]="form.first_visit_date" name="first_visit_date" required></div>

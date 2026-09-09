@@ -33,7 +33,7 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
 
         <div class="left-footer">
-          <span>&copy; 2024 Cecos Church Management</span>
+          <span>&copy; 2026 Cecos Church Management</span>
         </div>
       </div>
 
@@ -86,7 +86,7 @@ import { AuthService } from '../../core/services/auth.service';
               <label>Email professionnel</label>
               <div class="input-with-icon">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="var(--gray-400)"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-                <input type="email" class="form-input" [(ngModel)]="data.email" name="email" placeholder="prenom.nom@google.com" required>
+                <input type="email" class="form-input" [(ngModel)]="data.email" name="email" placeholder="prenom.nom@gmail.com" required>
               </div>
               <span class="hint">Seules les adresses gmail.com sont acceptees.</span>
             </div>
@@ -292,8 +292,11 @@ export class RegisterComponent {
       if (!this.data.first_name || !this.data.last_name || !this.data.email || !this.data.password) {
         this.error = 'Veuillez remplir tous les champs obligatoires'; return;
       }
-      if (!this.data.email.toLowerCase().endsWith('@gmail.com')) {
-        this.error = 'Seules les adresses email @gmail.com sont acceptees'; return;
+      const validDomains = ['@gmail.com', '@yahoo.com', '@yahoo.fr', '@outlook.com', '@hotmail.com', '@live.com', '@icloud.com', '@protonmail.com'];
+      const emailLower = this.data.email.toLowerCase();
+      const isValidDomain = validDomains.some(d => emailLower.endsWith(d));
+      if (!isValidDomain) {
+        this.error = 'Adresse email invalide. Utilisez gmail.com, yahoo.com, outlook.com, etc.'; return;
       }
       if (this.data.password !== this.data.password_confirm) { this.error = 'Les mots de passe ne correspondent pas'; return; }
       if (this.data.password.length < 8) { this.error = 'Le mot de passe doit contenir au moins 8 caracteres'; return; }
