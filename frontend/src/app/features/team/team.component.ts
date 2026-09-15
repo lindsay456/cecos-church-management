@@ -389,7 +389,7 @@ export class TeamComponent implements OnInit {
     this.showInvite = true;
   }
 
-  closeInviteModal() { this.showInvite = false; }
+  closeInviteModal() { this.showInvite = false; this.saving = false; }
 
   sendInvite() {
     this.saving = true;

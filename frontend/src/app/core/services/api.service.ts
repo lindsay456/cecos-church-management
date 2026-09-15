@@ -25,17 +25,24 @@ export class ApiService {
       if (!res.ok) throw new Error('Erreur');
       return res.blob();
     }).then(blob => {
-      const blobUrl = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.target = '_blank';
-      a.rel = 'noopener';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(blobUrl);
-      }, 1000);
+      const blobUrl = URL.createObjectURL(blob);
+      const win = window.open('', '_blank');
+      if (win) {
+        win.document.write(
+          '<!DOCTYPE html><html><head><title>' + filename + '</title>' +
+          '<style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#525659}' +
+          'iframe{width:100%;height:100vh;border:none}' +
+          '</style></head><body>' +
+          '<iframe src="' + blobUrl + '"></iframe>' +
+          '</body></html>'
+        );
+        win.document.close();
+      } else {
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        a.click();
+      }
     }).catch(() => {
       alert('Erreur lors de l\'ouverture du fichier');
     });
