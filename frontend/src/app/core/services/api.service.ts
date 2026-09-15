@@ -21,9 +21,21 @@ export class ApiService {
   openPdfInTab(url: string, filename: string): void {
     fetch(url, {
       headers: { 'Authorization': `Bearer ${this.getToken()}` }
-    }).then(res => res.blob()).then(blob => {
+    }).then(res => {
+      if (!res.ok) throw new Error('Erreur');
+      return res.blob();
+    }).then(blob => {
       const blobUrl = window.URL.createObjectURL(blob);
-      window.open(blobUrl, '_blank');
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(blobUrl);
+      }, 1000);
     }).catch(() => {
       alert('Erreur lors de l\'ouverture du fichier');
     });
