@@ -930,7 +930,7 @@ export class MembersComponent implements OnInit {
 
   archiveMember(m: any) {
     if (confirm(`Voulez-vous vraiment archiver ${m.full_name} ?`)) {
-      this.api.updateMember(m.id, { status: 'ARCHIVED' }).subscribe({
+      this.api.archiveMember(m.id).subscribe({
         next: () => { this.load(); this.toast.success('Membre archive avec succes'); },
         error: (err) => this.toast.error(err.error?.detail || 'Erreur lors de l\'archivage')
       });

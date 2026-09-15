@@ -54,6 +54,7 @@ export class ApiService {
   getMember(id: number): Observable<Member> { return this.http.get<Member>(`${this.base}/members/${id}/`); }
   createMember(data: any): Observable<Member> { return this.http.post<Member>(`${this.base}/members/`, data); }
   updateMember(id: number, data: any): Observable<Member> { return this.http.put<Member>(`${this.base}/members/${id}/`, data); }
+  archiveMember(id: number): Observable<any> { return this.http.post(`${this.base}/members/${id}/archive/`, {}); }
   transferMember(id: number, data: any): Observable<any> { return this.http.post(`${this.base}/members/${id}/transfer/`, data); }
   getMemberDonations(memberId: number): Observable<any> { return this.http.get(`${this.base}/members/${memberId}/donations/`); }
   getMemberDepartments(memberId: number): Observable<any> { return this.http.get(`${this.base}/members/${memberId}/departments/`); }

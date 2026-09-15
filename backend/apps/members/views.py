@@ -75,6 +75,14 @@ class MembreViewSet(viewsets.ModelViewSet):
         audit_update(instance, user=self.request.user, request=self.request, reason="Archivage membre")
 
     @action(detail=True, methods=["post"])
+    def archive(self, request, pk=None):
+        member = self.get_object()
+        member.status = "ARCHIVED"
+        member.save(update_fields=["status", "updated_at"])
+        audit_update(member, user=self.request.user, request=self.request, reason="Archivage membre")
+        return Response({"detail": "Membre archive avec succes."})
+
+    @action(detail=True, methods=["post"])
     def transfer(self, request, pk=None):
         member = self.get_object()
         serializer = MembreTransferSerializer(data=request.data)
