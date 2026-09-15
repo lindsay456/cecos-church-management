@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
   selector: 'app-members',
@@ -709,7 +710,7 @@ export class MembersComponent implements OnInit {
 
   form: any = this.getEmptyForm();
 
-  constructor(private api: ApiService, private toast: ToastService) {}
+  constructor(private api: ApiService, private toast: ToastService, private confirm: ConfirmService) {}
 
   ngOnInit() {
     this.load();
@@ -928,13 +929,13 @@ export class MembersComponent implements OnInit {
     });
   }
 
-  archiveMember(m: any) {
-    if (confirm(`Voulez-vous vraiment archiver ${m.full_name} ?`)) {
-      this.api.archiveMember(m.id).subscribe({
-        next: () => { this.load(); this.toast.success('Membre archive avec succes'); },
-        error: (err) => this.toast.error(err.error?.detail || 'Erreur lors de l\'archivage')
-      });
-    }
+  async archiveMember(m: any) {
+    const ok = await this.confirm.confirm('Archiver le membre', `Voulez-vous vraiment archiver ${m.full_name} ?`, { confirmText: 'Archiver', type: 'warning' });
+    if (!ok) return;
+    this.api.archiveMember(m.id).subscribe({
+      next: () => { this.load(); this.toast.success('Membre archive avec succes'); },
+      error: (err) => this.toast.error(err.error?.detail || 'Erreur lors de l\'archivage')
+    });
   }
 
   exportMembers() {

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
   selector: 'app-chapels',
@@ -240,7 +241,7 @@ export class ChapelsComponent implements OnInit {
   detailItem: any = null;
   form: any = this.getEmptyForm();
 
-  constructor(private api: ApiService, private toast: ToastService) {}
+  constructor(private api: ApiService, private toast: ToastService, private confirm: ConfirmService) {}
 
   ngOnInit() {
     this.load();
@@ -282,8 +283,9 @@ export class ChapelsComponent implements OnInit {
 
   viewDetail(c: any) { this.detailItem = c; }
 
-  deleteChapel(c: any) {
-    if (!confirm(`Supprimer la chapelle "${c.name}" ?`)) return;
+  async deleteChapel(c: any) {
+    const ok = await this.confirm.confirm('Supprimer la chapelle', `Voulez-vous vraiment supprimer "${c.name}" ?`, { confirmText: 'Supprimer', type: 'danger' });
+    if (!ok) return;
     this.api.deleteChapel(c.id).subscribe({
       next: () => { this.toast.success('Chapelle supprimee'); this.load(); },
       error: (err) => { this.toast.error(err.error?.detail || 'Impossible de supprimer cette chapelle'); }
@@ -295,7 +297,7 @@ export class ChapelsComponent implements OnInit {
     const obs = this.editing ? this.api.updateChapel(this.editId, this.form) : this.api.createChapel(this.form);
     obs.subscribe({
       next: () => { this.showForm = false; this.editing = false; this.saving = false; this.load(); },
-      error: (err) => { this.saving = false; alert(err.error?.detail || 'Erreur'); }
+      error: (err) => { this.saving = false; this.toast.error(err.error?.detail || 'Erreur'); }
     });
   }
 }

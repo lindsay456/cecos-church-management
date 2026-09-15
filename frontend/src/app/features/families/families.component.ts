@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+import { ToastService } from '../../core/services/toast.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 
 @Component({
   selector: 'app-families',
@@ -197,7 +199,7 @@ export class FamiliesComponent implements OnInit {
   selectedFamily: any = null;
   form: any = { name: '', main_email: '', main_phone: '', address: '', notes: '' };
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private toast: ToastService, private confirm: ConfirmService) {}
   ngOnInit() { this.load(); }
 
   load() {
@@ -228,16 +230,16 @@ export class FamiliesComponent implements OnInit {
       : this.api.createFamily(this.form);
     req.subscribe({
       next: () => { this.showForm = false; this.editing = null; this.saving = false; this.load(); },
-      error: (err) => { this.saving = false; alert(err.error?.detail || 'Erreur'); }
+      error: (err) => { this.saving = false; this.toast.error(err.error?.detail || 'Erreur'); }
     });
   }
 
-  deactivateFamily(f: any) {
-    if (confirm(`Voulez-vous desactiver la famille "${f.name}" ?`)) {
-      this.api.updateFamily(f.id, { status: 'INACTIVE' }).subscribe({
-        next: () => this.load(),
-        error: (err) => alert(err.error?.detail || 'Erreur')
-      });
-    }
+  async deactivateFamily(f: any) {
+    const ok = await this.confirm.confirm('Desactiver la famille', `Voulez-vous desactiver la famille "${f.name}" ?`, { confirmText: 'Desactiver', type: 'warning' });
+    if (!ok) return;
+    this.api.updateFamily(f.id, { status: 'INACTIVE' }).subscribe({
+      next: () => { this.load(); this.toast.success('Famille desactivee'); },
+      error: (err) => this.toast.error(err.error?.detail || 'Erreur')
+    });
   }
 }

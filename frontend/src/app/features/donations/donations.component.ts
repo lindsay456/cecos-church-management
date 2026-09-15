@@ -607,12 +607,12 @@ export class DonationsComponent implements OnInit {
     if (this.editingDon) {
       this.api.updateDonation(this.editingDon.id, payload).subscribe({
         next: () => { this.closeFormModal(); this.saving = false; this.loadDonations(); },
-        error: (err) => { this.saving = false; alert(err.error?.detail || 'Erreur'); }
+        error: (err) => { this.saving = false; this.toast.error(err.error?.detail || 'Erreur'); }
       });
     } else {
       this.api.createDonation(payload).subscribe({
         next: () => { this.closeFormModal(); this.saving = false; this.loadDonations(); },
-        error: (err) => { this.saving = false; alert(err.error?.detail || 'Erreur'); }
+        error: (err) => { this.saving = false; this.toast.error(err.error?.detail || 'Erreur'); }
       });
     }
   }
@@ -621,7 +621,7 @@ export class DonationsComponent implements OnInit {
     this.processingId = id;
     this.api.validateDonation(id).subscribe({
       next: () => { this.processingId = 0; this.loadDonations(); },
-      error: (err) => { this.processingId = 0; alert(err.error?.detail || 'Erreur'); }
+      error: (err) => { this.processingId = 0; this.toast.error(err.error?.detail || 'Erreur'); }
     });
   }
 
@@ -637,7 +637,7 @@ export class DonationsComponent implements OnInit {
     this.processingId = this.rejectingDon.id;
     this.api.rejectDonation(this.rejectingDon.id, this.rejectReason).subscribe({
       next: () => { this.processingId = 0; this.closeRejectModal(); this.loadDonations(); },
-      error: (err) => { this.processingId = 0; alert(err.error?.detail || 'Erreur'); }
+      error: (err) => { this.processingId = 0; this.toast.error(err.error?.detail || 'Erreur'); }
     });
   }
 
@@ -653,7 +653,7 @@ export class DonationsComponent implements OnInit {
     this.processingId = this.cancellingDon.id;
     this.api.cancelDonation(this.cancellingDon.id, this.cancelReason).subscribe({
       next: () => { this.processingId = 0; this.closeCancelModal(); this.loadDonations(); },
-      error: (err) => { this.processingId = 0; alert(err.error?.detail || 'Erreur'); }
+      error: (err) => { this.processingId = 0; this.toast.error(err.error?.detail || 'Erreur'); }
     });
   }
 
@@ -668,7 +668,7 @@ export class DonationsComponent implements OnInit {
     this.processingId = this.deletingDon.id;
     this.api.deleteDonation(this.deletingDon.id).subscribe({
       next: () => { this.processingId = 0; this.closeDeleteModal(); this.loadDonations(); },
-      error: (err) => { this.processingId = 0; alert(err.error?.detail || 'Erreur'); }
+      error: (err) => { this.processingId = 0; this.toast.error(err.error?.detail || 'Erreur'); }
     });
   }
 

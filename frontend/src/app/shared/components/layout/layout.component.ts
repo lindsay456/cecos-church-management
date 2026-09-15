@@ -9,15 +9,17 @@ import { routeAnimation } from '../../../core/animations/route.animation';
 import { hasRole, ADMIN_ROLES, CAN_VIEW_AUDIT, CAN_VIEW_FINANCE, CAN_VIEW_REPORTS, CAN_MANAGE_DEPARTMENTS, CAN_VIEW_PASTORAL, CAN_VIEW_REDISTRIBUTION, CAN_MANAGE_SETTINGS, CAN_MANAGE_ATTENDANCE } from '../../../core/constants/roles';
 import { filter } from 'rxjs';
 import { ToastComponent } from '../toast/toast.component';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, ToastComponent],
+  imports: [CommonModule, RouterModule, ToastComponent, ConfirmDialogComponent],
   animations: [routeAnimation],
   template: `
     <div class="app-layout">
       <app-toast></app-toast>
+      <app-confirm-dialog></app-confirm-dialog>
       <aside class="sidebar">
         <div class="sidebar-header">
           <div class="brand">
