@@ -50,3 +50,7 @@ ecclesia-gestion/
 # Secrets
 *.pem
 *.key
+
+# Temp files
+*.pptx
+create_pptx.py
