@@ -16,7 +16,7 @@ import { AuthService } from '../../core/services/auth.service';
         <p class="page-subtitle">Gerez les membres de votre equipe et leurs acces</p>
       </div>
       <button class="btn-primary btn-invite" (click)="openInviteModal()">
-        <span class="material-icons" style="font-size:18px">person_add</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="margin-right:6px;vertical-align:middle"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         Inviter un membre
       </button>
     </div>
@@ -80,7 +80,7 @@ import { AuthService } from '../../core/services/auth.service';
       <h3>Aucun membre d'equipe</h3>
       <p>Invitez des membres pour gerer votre eglise.</p>
       <button class="btn-primary" style="margin-top:12px" (click)="openInviteModal()">
-        <span class="material-icons" style="font-size:18px">person_add</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="margin-right:6px;vertical-align:middle"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         Inviter un membre
       </button>
     </div>
@@ -91,7 +91,7 @@ import { AuthService } from '../../core/services/auth.service';
         <div class="modal-header">
           <h3>Inviter un membre d'equipe</h3>
           <button class="btn-close" (click)="closeInviteModal()">
-            <span class="material-icons">close</span>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
           </button>
         </div>
         <form (ngSubmit)="sendInvite()">
@@ -126,13 +126,13 @@ import { AuthService } from '../../core/services/auth.service';
             </div>
           </div>
           <div class="invite-info">
-            <span class="material-icons">info</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="#3b82f6" style="flex-shrink:0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
             <span>Un mot de passe sera genere automatiquement et envoye par email a l'adresse indiquee.</span>
           </div>
           <div class="form-actions">
             <button type="button" class="btn-secondary" (click)="closeInviteModal()">Annuler</button>
             <button type="submit" class="btn-primary" [disabled]="saving">
-              <span class="material-icons" style="font-size:16px" *ngIf="!saving">send</span>
+              <svg *ngIf="!saving" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="margin-right:6px;vertical-align:middle"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
               {{ saving ? 'Envoi en cours...' : 'Envoyer l\'invitation' }}
             </button>
           </div>
@@ -146,7 +146,7 @@ import { AuthService } from '../../core/services/auth.service';
         <div class="modal-header">
           <h3>Membre cree avec succes</h3>
           <button class="btn-close" (click)="showPasswordModal = false">
-            <span class="material-icons">close</span>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
           </button>
         </div>
         <div class="password-result">
@@ -160,12 +160,13 @@ import { AuthService } from '../../core/services/auth.service';
             <div class="password-value">
               <code>{{ generatedPassword }}</code>
               <button class="btn-copy" (click)="copyPassword()" [title]="'Copier'">
-                <span class="material-icons">{{ copied ? 'check' : 'content_copy' }}</span>
+                <svg *ngIf="!copied" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                <svg *ngIf="copied" viewBox="0 0 24 24" width="18" height="18" fill="#16a34a"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
               </button>
             </div>
           </div>
           <p class="password-note">
-            <span class="material-icons">email</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="#3b82f6" style="vertical-align:middle;margin-right:4px"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
             Ce mot de passe a ete envoye par email a <strong>{{ inviteForm.email }}</strong>.
             Le membre pourra le changer apres sa premiere connexion.
           </p>
@@ -182,7 +183,7 @@ import { AuthService } from '../../core/services/auth.service';
         <div class="modal-header">
           <h3>Modifier le membre</h3>
           <button class="btn-close" (click)="showEdit = false">
-            <span class="material-icons">close</span>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
           </button>
         </div>
         <form (ngSubmit)="saveEdit()">
@@ -226,7 +227,7 @@ import { AuthService } from '../../core/services/auth.service';
         <div class="modal-header">
           <h3>Retirer de l'equipe</h3>
           <button class="btn-close" (click)="deleting = null">
-            <span class="material-icons">close</span>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
           </button>
         </div>
         <p>Voulez-vous retirer <strong>{{ deleting?.first_name }} {{ deleting?.last_name }}</strong> de l'equipe ?</p>
@@ -292,7 +293,7 @@ import { AuthService } from '../../core/services/auth.service';
     .btn-danger { padding: 10px 20px; background: var(--red); color: #fff; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; font-size: 14px; font-family: var(--font-family);
       &:hover { background: #DC2626; }
     }
-    .btn-close { background: none; border: none; cursor: pointer; padding: 4px; .material-icons { font-size: 20px; color: var(--gray-400); } }
+    .btn-close { background: none; border: none; cursor: pointer; padding: 4px; svg { color: var(--gray-400); } }
 
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(2px); }
     .modal { background: var(--white); border-radius: var(--radius-lg); padding: 28px; width: 100%; max-width: 520px; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-xl); }
@@ -307,7 +308,7 @@ import { AuthService } from '../../core/services/auth.service';
     .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--gray-100); }
 
     .invite-info { display: flex; align-items: flex-start; gap: 8px; padding: 12px 14px; background: #EFF6FF; border-radius: var(--radius-sm); font-size: 13px; color: #1E40AF; margin-bottom: 16px;
-      .material-icons { font-size: 18px; margin-top: 1px; flex-shrink: 0; }
+      svg { margin-top: 1px; flex-shrink: 0; }
     }
 
     .password-result { text-align: center; padding: 8px 0; }
@@ -321,10 +322,9 @@ import { AuthService } from '../../core/services/auth.service';
     }
     .btn-copy { background: none; border: none; cursor: pointer; padding: 6px; border-radius: 6px; color: var(--gray-500);
       &:hover { background: var(--gray-100); color: var(--primary); }
-      .material-icons { font-size: 18px; }
     }
     .password-note { font-size: 13px; color: var(--gray-500); display: flex; align-items: flex-start; gap: 6px; text-align: left; background: #ECFDF5; padding: 12px; border-radius: var(--radius-sm);
-      .material-icons { font-size: 16px; color: #16a34a; margin-top: 1px; flex-shrink: 0; }
+      svg { margin-top: 1px; flex-shrink: 0; }
     }
 
     .empty-state { text-align: center; padding: 60px 20px; background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-sm);

@@ -79,9 +79,11 @@ class RegistrationStep2Serializer(serializers.Serializer):
     photo = serializers.ImageField(required=False, allow_null=True)
 
     def validate_email(self, value):
-        if not value.lower().endswith("@gmail.com"):
+        valid_domains = ['@gmail.com', '@yahoo.com', '@yahoo.fr', '@outlook.com', '@hotmail.com', '@live.com', '@icloud.com', '@protonmail.com']
+        email_lower = value.lower()
+        if not any(email_lower.endswith(d) for d in valid_domains):
             raise serializers.ValidationError(
-                "Seules les adresses email @gmail.com sont acceptees."
+                "Adresse email invalide. Utilisez gmail.com, yahoo.com, outlook.com, etc."
             )
         return value.lower()
 

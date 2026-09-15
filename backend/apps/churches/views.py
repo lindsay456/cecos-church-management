@@ -161,10 +161,11 @@ class RegistrationView(APIView):
     def _single_call(self, request):
         data = request.data
 
+        valid_domains = ['@gmail.com', '@yahoo.com', '@yahoo.fr', '@outlook.com', '@hotmail.com', '@live.com', '@icloud.com', '@protonmail.com']
         email = data.get("email", "").lower()
-        if not email.endswith("@gmail.com"):
+        if not any(email.endswith(d) for d in valid_domains):
             return Response(
-                {"detail": "Seules les adresses email @gmail.com sont acceptees."},
+                {"detail": "Adresse email invalide. Utilisez gmail.com, yahoo.com, outlook.com, etc."},
                 status=400,
             )
 
@@ -176,7 +177,7 @@ class RegistrationView(APIView):
         }
 
         with transaction.atomic():
-            church_code = data.get("church_code") or f"CH-{uuid.uuid4().hex[:8].upper()}"
+            church_code = f"CH-{uuid.uuid4().hex[:8].upper()}"
             church = EntiteHierarchique.objects.create(
                 name=data["church_name"],
                 code=church_code,
