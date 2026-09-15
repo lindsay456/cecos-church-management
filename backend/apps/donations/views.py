@@ -146,12 +146,12 @@ class DonViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Aucun recu pour ce don."}, status=404)
         if receipt.pdf_file:
             from django.http import FileResponse
-            return FileResponse(receipt.pdf_file.open(), as_attachment=True, filename=f"recu_{receipt.receipt_number}.pdf")
+            return FileResponse(receipt.pdf_file.open(), content_type="application/pdf", filename=f"recu_{receipt.receipt_number}.pdf")
         from apps.donations.receipt_generator import generate_donation_receipt_pdf
         buf = generate_donation_receipt_pdf(receipt, don)
         from django.http import HttpResponse
         response = HttpResponse(buf.getvalue(), content_type="application/pdf")
-        response["Content-Disposition"] = f'attachment; filename="recu_{receipt.receipt_number}.pdf"'
+        response["Content-Disposition"] = f'inline; filename="recu_{receipt.receipt_number}.pdf"'
         return response
 
 
@@ -176,11 +176,11 @@ class RecuViewSet(viewsets.ReadOnlyModelViewSet):
         receipt = self.get_object()
         if receipt.pdf_file:
             from django.http import FileResponse
-            return FileResponse(receipt.pdf_file.open(), as_attachment=True, filename=f"recu_{receipt.receipt_number}.pdf")
+            return FileResponse(receipt.pdf_file.open(), content_type="application/pdf", filename=f"recu_{receipt.receipt_number}.pdf")
         don = receipt.donation
         from apps.donations.receipt_generator import generate_donation_receipt_pdf
         buf = generate_donation_receipt_pdf(receipt, don)
         from django.http import HttpResponse
         response = HttpResponse(buf.getvalue(), content_type="application/pdf")
-        response["Content-Disposition"] = f'attachment; filename="recu_{receipt.receipt_number}.pdf"'
+        response["Content-Disposition"] = f'inline; filename="recu_{receipt.receipt_number}.pdf"'
         return response
