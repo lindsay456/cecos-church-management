@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ConfirmService, ConfirmDialog } from '../../services/confirm.service';
+import { ConfirmService, ConfirmDialog } from '../../../core/services/confirm.service';
 
 @Component({
   selector: 'app-confirm-dialog',
