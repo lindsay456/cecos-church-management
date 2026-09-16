@@ -31,7 +31,13 @@ export class ApiService {
       return res.blob();
     }).then(blob => {
       const blobUrl = URL.createObjectURL(blob);
-      newTab.location.href = blobUrl;
+      newTab.document.write(`
+        <html><head><title>${filename}</title>
+        <style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f5f5f5;}
+        embed{width:100vw;height:100vh;border:none;}</style></head>
+        <body><embed src="${blobUrl}" type="application/pdf"></body></html>
+      `);
+      newTab.document.close();
     }).catch(() => {
       newTab.close();
       alert('Erreur lors de l\'ouverture du fichier');
