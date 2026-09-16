@@ -169,13 +169,13 @@ import { ToastService } from '../../core/services/toast.service';
           <div class="form-group"><label>Departement *</label>
             <select [(ngModel)]="assignForm.department" name="department" required>
               <option value="">Selectionner un departement...</option>
-              <option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option>
+              <option *ngFor="let d of departments" [ngValue]="d.id">{{ d.name }}</option>
             </select>
           </div>
           <div class="form-group"><label>Membre *</label>
             <select [(ngModel)]="assignForm.member" name="member" required>
               <option value="">Selectionner un membre...</option>
-              <option *ngFor="let m of members" [value]="m.id">{{ m.first_name }} {{ m.last_name }}</option>
+              <option *ngFor="let m of members" [ngValue]="m.id">{{ m.first_name }} {{ m.last_name }}</option>
             </select>
           </div>
           <div class="form-row">
@@ -190,6 +190,7 @@ import { ToastService } from '../../core/services/toast.service';
             </div>
             <div class="form-group"><label>Annee *</label><input type="number" [(ngModel)]="assignForm.year" name="year" required></div>
           </div>
+          <div class="form-group"><label>Date debut *</label><input type="date" [(ngModel)]="assignForm.start_date" name="start_date" required></div>
           <div class="form-actions">
             <button type="button" class="btn-secondary" (click)="closeAssignModal()">Annuler</button>
             <button type="submit" class="btn-primary" [disabled]="saving">Affecter</button>
@@ -540,7 +541,7 @@ export class DepartmentsComponent implements OnInit {
   }
 
   openAssignModal() {
-    this.assignForm = { department: this.memberFilterDept || '', member: '', role_in_department: 'MEMBER', year: new Date().getFullYear() };
+    this.assignForm = { department: this.memberFilterDept || '', member: '', role_in_department: 'MEMBER', year: new Date().getFullYear(), start_date: new Date().toISOString().slice(0, 10) };
     this.showAssignModal = true;
   }
 
