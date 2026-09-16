@@ -19,11 +19,6 @@ export class ApiService {
   }
 
   openPdfInTab(url: string, filename: string): void {
-    const newTab = window.open('', '_blank');
-    if (!newTab) {
-      alert('Autorisez les popups puis reessayez');
-      return;
-    }
     fetch(url, {
       headers: { 'Authorization': `Bearer ${this.getToken()}` }
     }).then(res => {
@@ -31,15 +26,14 @@ export class ApiService {
       return res.blob();
     }).then(blob => {
       const blobUrl = URL.createObjectURL(blob);
-      newTab.document.write(`
-        <html><head><title>${filename}</title>
-        <style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f5f5f5;}
-        embed{width:100vw;height:100vh;border:none;}</style></head>
-        <body><embed src="${blobUrl}" type="application/pdf"></body></html>
-      `);
-      newTab.document.close();
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
     }).catch(() => {
-      newTab.close();
       alert('Erreur lors de l\'ouverture du fichier');
     });
   }

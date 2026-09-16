@@ -151,7 +151,7 @@ class DonViewSet(viewsets.ModelViewSet):
         buf = generate_donation_receipt_pdf(receipt, don)
         from django.http import HttpResponse
         response = HttpResponse(buf.getvalue(), content_type="application/pdf")
-        response["Content-Disposition"] = f'inline; filename="recu_{receipt.receipt_number}.pdf"'
+        response["Content-Disposition"] = f'attachment; filename="recu_{receipt.receipt_number}.pdf"'
         return response
 
 
@@ -182,5 +182,5 @@ class RecuViewSet(viewsets.ReadOnlyModelViewSet):
         buf = generate_donation_receipt_pdf(receipt, don)
         from django.http import HttpResponse
         response = HttpResponse(buf.getvalue(), content_type="application/pdf")
-        response["Content-Disposition"] = f'inline; filename="recu_{receipt.receipt_number}.pdf"'
+        response["Content-Disposition"] = f'attachment; filename="recu_{receipt.receipt_number}.pdf"'
         return response
