@@ -19,23 +19,9 @@ export class ApiService {
   }
 
   openPdfInTab(url: string, filename: string): void {
-    fetch(url, {
-      headers: { 'Authorization': `Bearer ${this.getToken()}` }
-    }).then(res => {
-      if (!res.ok) throw new Error('Erreur');
-      return res.blob();
-    }).then(blob => {
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
-    }).catch(() => {
-      alert('Erreur lors de l\'ouverture du fichier');
-    });
+    const token = this.getToken();
+    const sep = url.includes('?') ? '&' : '?';
+    window.open(`${url}${sep}token=${token}`, '_blank');
   }
 
   // Churches
