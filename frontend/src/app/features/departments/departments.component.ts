@@ -425,7 +425,7 @@ export class DepartmentsComponent implements OnInit {
   editing: any = null;
   editingPlan: any = null;
   deleting: any = null;
-  activeTab: 'list' | 'plan' = 'list';
+  activeTab: 'list' | 'members' | 'plan' = 'list';
   form: any = this.getEmptyForm();
   planForm: any = this.getEmptyPlanForm();
 
