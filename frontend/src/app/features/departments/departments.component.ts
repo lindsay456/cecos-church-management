@@ -17,9 +17,10 @@ import { ToastService } from '../../core/services/toast.service';
       <div class="header-actions">
         <div class="tabs">
           <button [class.active]="activeTab === 'list'" (click)="activeTab = 'list'">Departements</button>
+          <button [class.active]="activeTab === 'members'" (click)="activeTab = 'members'; loadDeptMembers()">Membres</button>
           <button [class.active]="activeTab === 'plan'" (click)="activeTab = 'plan'; loadPlans()">Plan annuel</button>
         </div>
-        <button class="btn-primary" (click)="activeTab === 'list' ? openForm() : openPlanForm()">+ {{ activeTab === 'list' ? 'Departement' : 'Activite' }}</button>
+        <button class="btn-primary" (click)="activeTab === 'list' ? openForm() : activeTab === 'members' ? openAssignModal() : openPlanForm()">+ {{ activeTab === 'list' ? 'Departement' : activeTab === 'members' ? 'Affecter' : 'Activite' }}</button>
       </div>
     </div>
 
@@ -113,6 +114,99 @@ import { ToastService } from '../../core/services/toast.service';
       </div>
       <div class="empty-state" *ngIf="!plansLoading && !filteredPlans.length">
         <h3>Aucune activite planifiee</h3><p>Ajoutez des activites au plan annuel de vos departements.</p>
+      </div>
+    </div>
+
+    <!-- DEPT MEMBERS TAB -->
+    <div *ngIf="activeTab === 'members'">
+      <div class="filters-bar">
+        <select [(ngModel)]="memberFilterDept" (change)="filterDeptMembers()">
+          <option value="">Tous les departements</option>
+          <option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option>
+        </select>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="var(--gray-400)"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input [(ngModel)]="memberSearch" (input)="filterDeptMembers()" placeholder="Rechercher un membre..." class="search-input">
+        </div>
+      </div>
+
+      <div class="table-container" *ngIf="filteredMembers.length">
+        <table>
+          <thead>
+            <tr>
+              <th>Membre</th><th>Departement</th><th>Role</th><th>Annee</th><th>Statut</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of filteredMembers">
+              <td><strong>{{ m.member_name }}</strong><br><span class="text-muted">{{ m.member_number }}</span></td>
+              <td>{{ getDeptName(m.department) }}</td>
+              <td><span class="badge badge-role">{{ m.role_in_department || 'Membre' }}</span></td>
+              <td>{{ m.year }}</td>
+              <td><span class="badge" [class.badge-active]="m.is_active" [class.badge-inactive]="!m.is_active">{{ m.is_active ? 'Actif' : 'Inactif' }}</span></td>
+              <td class="actions">
+                <button class="btn-icon btn-danger" title="Retirer" (click)="confirmRemoveMember(m)">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="empty-state" *ngIf="!loading && !filteredMembers.length">
+        <h3>Aucun membre assigne</h3><p>Assignez des membres a vos departements.</p>
+      </div>
+    </div>
+
+    <!-- ASSIGN MEMBER MODAL -->
+    <div class="modal-overlay" *ngIf="showAssignModal" (click)="closeAssignModal()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Affecter un membre a un departement</h3>
+          <button class="btn-close" (click)="closeAssignModal()">&times;</button>
+        </div>
+        <form (ngSubmit)="saveAssignment()">
+          <div class="form-group"><label>Departement *</label>
+            <select [(ngModel)]="assignForm.department" name="department" required>
+              <option value="">Selectionner un departement...</option>
+              <option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Membre *</label>
+            <select [(ngModel)]="assignForm.member" name="member" required>
+              <option value="">Selectionner un membre...</option>
+              <option *ngFor="let m of members" [value]="m.id">{{ m.first_name }} {{ m.last_name }}</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Role</label>
+              <select [(ngModel)]="assignForm.role_in_department" name="role_in_department">
+                <option value="MEMBER">Membre</option>
+                <option value="SECRETARY">Secretaire</option>
+                <option value="TREASURER">Tresorier</option>
+                <option value="COORDINATOR">Coordinateur</option>
+                <option value="ADJUNCT">Adjoint</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Annee *</label><input type="number" [(ngModel)]="assignForm.year" name="year" required></div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="closeAssignModal()">Annuler</button>
+            <button type="submit" class="btn-primary" [disabled]="saving">Affecter</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- REMOVE MEMBER CONFIRM -->
+    <div class="modal-overlay" *ngIf="removingMember" (click)="removingMember = null">
+      <div class="modal modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header"><h3>Retirer le membre</h3><button class="btn-close" (click)="removingMember = null">&times;</button></div>
+        <p>Voulez-vous retirer <strong>{{ removingMember?.member_name }}</strong> du departement <strong>{{ getDeptName(removingMember?.department) }}</strong> ?</p>
+        <div class="form-actions">
+          <button class="btn-secondary" (click)="removingMember = null">Annuler</button>
+          <button class="btn-danger" (click)="removeMember()">Retirer</button>
+        </div>
       </div>
     </div>
 
@@ -263,8 +357,10 @@ import { ToastService } from '../../core/services/toast.service';
     td { padding: 12px 16px; border-top: 1px solid var(--gray-100); font-size: 14px; }
     .actions { display: flex; gap: 4px; }
     .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .badge-role { background: #DBEAFE; color: #1E40AF; }
     .badge-active { background: #DCFCE7; color: #166534; }
     .badge-inactive { background: var(--gray-100); color: var(--gray-500); }
+    .text-muted { font-size: 12px; color: var(--gray-400); }
     .badge-planned { background: #DBEAFE; color: #1E40AF; }
     .badge-progress { background: #FEF3C7; color: #92400E; }
     .badge-done { background: #DCFCE7; color: #166534; }
@@ -310,6 +406,13 @@ export class DepartmentsComponent implements OnInit {
   members: any[] = [];
   plans: any[] = [];
   filteredPlans: any[] = [];
+  deptMembers: any[] = [];
+  filteredMembers: any[] = [];
+  memberFilterDept = '';
+  memberSearch = '';
+  showAssignModal = false;
+  removingMember: any = null;
+  assignForm: any = { department: '', member: '', role: 'MEMBER', year: new Date().getFullYear() };
   planYears: number[] = [];
   search = '';
   planSearch = '';
@@ -416,6 +519,47 @@ export class DepartmentsComponent implements OnInit {
   deletePlan(plan: any) {
     this.api.deleteAnnualPlan(plan.id).subscribe({
       next: () => { this.loadPlans(); this.toast.success('Activite supprimee'); },
+      error: (err) => { this.toast.error(err.error?.detail || 'Erreur'); }
+    });
+  }
+
+  loadDeptMembers() {
+    this.loading = true;
+    this.api.getDepartmentMemberships().subscribe({
+      next: (res: any) => { this.deptMembers = res.results || res || []; this.filterDeptMembers(); this.loading = false; },
+      error: () => { this.loading = false; }
+    });
+  }
+
+  filterDeptMembers() {
+    const q = this.memberSearch.toLowerCase();
+    this.filteredMembers = this.deptMembers.filter(m =>
+      (!q || m.member_name?.toLowerCase().includes(q) || m.member_number?.toLowerCase().includes(q)) &&
+      (!this.memberFilterDept || String(m.department) === this.memberFilterDept)
+    );
+  }
+
+  openAssignModal() {
+    this.assignForm = { department: this.memberFilterDept || '', member: '', role_in_department: 'MEMBER', year: new Date().getFullYear() };
+    this.showAssignModal = true;
+  }
+
+  closeAssignModal() { this.showAssignModal = false; }
+
+  saveAssignment() {
+    this.saving = true;
+    this.api.createDepartmentMembership(this.assignForm).subscribe({
+      next: () => { this.closeAssignModal(); this.saving = false; this.loadDeptMembers(); this.toast.success('Membre affecte'); },
+      error: (err) => { this.saving = false; this.toast.error(err.error?.detail || 'Erreur'); }
+    });
+  }
+
+  confirmRemoveMember(m: any) { this.removingMember = m; }
+
+  removeMember() {
+    if (!this.removingMember) return;
+    this.api.deleteDepartmentMembership(this.removingMember.id).subscribe({
+      next: () => { this.removingMember = null; this.loadDeptMembers(); this.toast.success('Membre retire'); },
       error: (err) => { this.toast.error(err.error?.detail || 'Erreur'); }
     });
   }
